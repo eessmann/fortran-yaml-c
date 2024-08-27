@@ -1,25 +1,32 @@
+cmake_minimum_required(VERSION 3.20)
 
-cmake_minimum_required(VERSION "3.14")
-project (FORTRAN_YAML_C VERSION "0.2.5" LANGUAGES C Fortran)
+# Set basic project properties
+project(fortran-yaml-c
+        VERSION "0.2.6"
+        DESCRIPTION "This is YAML parser for Fortran matching the YAML 1.1 spec."
+        LANGUAGES C Fortran
+)
 
 include(FortranCInterface)
 FortranCInterface_VERIFY()
 
-set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/modules")
+# Set up install directories
+include(GNUInstallDirs)
+set(INSTALL_INCLUDEDIR "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}")
+set(INSTALL_MODULEDIR "${INSTALL_INCLUDEDIR}/mod")
 
-option(DOWNLOAD_LIBYAML "If ON, then libyaml will be downloaded and 
-built." ON)
-
+option(DOWNLOAD_LIBYAML "If ON, then libyaml will be downloaded and built." ON)
+option(FORTRAN_YAML_C_TESTING ON)
+include(cmake/CPM.cmake)
 # Find libyaml
-if (DOWNLOAD_LIBYAML) 
+if (DOWNLOAD_LIBYAML)
   # use CPM to download and build libyaml
-  include(cmake/CPM.cmake)
   CPMAddPackage(
-    NAME libyaml 
-    VERSION 0.2.5
-    GITHUB_REPOSITORY "yaml/libyaml"
-    GIT_TAG "release/0.2.5"
-    EXCLUDE_FROM_ALL ON
+          NAME libyaml
+          VERSION 0.2.5
+          GITHUB_REPOSITORY "yaml/libyaml"
+          GIT_TAG "release/0.2.5"
+          EXCLUDE_FROM_ALL ON
   )
 else()
   # Try to find libyaml using pkg-config
@@ -30,5 +37,61 @@ else()
   endif()
 endif()
 
+# Include project specific CMake functions
+include(cmake/fortran-yaml-c.cmake)
+
+# Include user customizable config settings
+include(config.cmake)
+
+# Configure the build type (see cmake/fortran-yaml-c.cmake)
+configure_build_type()
+
+# Configure the compiler flags (see cmake/fortran-yaml-c.cmake)
+configure_compiler_flags()
+
+# Build library
 add_subdirectory(src)
-add_subdirectory(tests)
+
+# Build tests
+if(FORTRAN_YAML_C_TESTING)
+  enable_testing()
+  add_subdirectory(tests)
+endif()
+
+#
+# Install package config find, so that other CMake project can find this project
+#
+include(CMakePackageConfigHelpers)
+
+# If project uses customized finders, they should be installed with it
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
+  install(
+          DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules
+          DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/fortran-yaml-c
+  )
+endif()
+
+# Install project, add namespace
+install(
+        EXPORT fortran-yaml-c-targets
+        FILE "fortran-yaml-c-targets.cmake"
+        NAMESPACE "fortran-yaml-c::"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/fortran-yaml-c"
+)
+
+# Create and install CMake package config file
+configure_package_config_file(
+        "${CMAKE_CURRENT_SOURCE_DIR}/cmake/export/fortran-yaml-c-config.cmake.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/fortran-yaml-c-config.cmake"
+        INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/fortran-yaml-c"
+)
+write_basic_package_version_file(
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/fortran-yaml-c-config-version.cmake"
+        VERSION "${PROJECT_VERSION}"
+        COMPATIBILITY SameMajorVersion
+)
+install(
+        FILES "${CMAKE_CURRENT_BINARY_DIR}/cmake/fortran-yaml-c-config.cmake"
+        "${CMAKE_CURRENT_BINARY_DIR}/cmake/fortran-yaml-c-config-version.cmake"
+        DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/fortran-yaml-c"
+)
