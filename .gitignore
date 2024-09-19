@@ -8,3 +8,5 @@ Photo.run
 build
 *.a
 *.dylib
+.vscode
+.idea
