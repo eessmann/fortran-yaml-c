@@ -5,7 +5,7 @@ include(GNUInstallDirs)
 include(FortranCInterface)
 FortranCInterface_VERIFY()
 
-set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/modules")
+set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/modules/fyaml")
 
 option(DOWNLOAD_LIBYAML "If ON, then libyaml will be downloaded and 
 built." ON)
