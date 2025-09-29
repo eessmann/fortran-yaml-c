@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.28..3.30)
-project (FORTRAN_YAML_C VERSION "0.2.6" LANGUAGES C Fortran)
+project (FORTRAN_YAML_C VERSION "0.2.7" LANGUAGES C Fortran)
 
 include(GNUInstallDirs)
 include(FortranCInterface)
