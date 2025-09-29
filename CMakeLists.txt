@@ -4,6 +4,7 @@ project (FORTRAN_YAML_C VERSION "0.2.7" LANGUAGES C Fortran)
 include(GNUInstallDirs)
 include(FortranCInterface)
 FortranCInterface_VERIFY()
+include(CMakePackageConfigHelpers)
 
 set(CMAKE_Fortran_MODULE_DIRECTORY "${CMAKE_BINARY_DIR}/modules/fyaml")
 
